@@ -44,6 +44,9 @@ class QRCodeDartScanView extends StatefulWidget {
   final double? widthPreview;
   final double? heightPreview;
   final TakePictureButtonBuilder? takePictureButtonBuilder;
+  final CameraDescription Function(List<CameraDescription> cameraDescriptions)?
+      selectCamera;
+
   const QRCodeDartScanView({
     Key? key,
     this.typeCamera = TypeCamera.back,
@@ -57,6 +60,7 @@ class QRCodeDartScanView extends StatefulWidget {
     this.takePictureButtonBuilder,
     this.widthPreview = double.maxFinite,
     this.heightPreview = double.maxFinite,
+    this.selectCamera,
   }) : super(key: key);
 
   @override
@@ -108,10 +112,17 @@ class _QRCodeDartScanViewState extends State<QRCodeDartScanView>
 
   void _initController() async {
     final cameras = await availableCameras();
-    var camera = cameras.first;
-    if (widget.typeCamera == TypeCamera.front && cameras.length > 1) {
-      camera = cameras[1];
+
+    CameraDescription camera;
+    if (widget.selectCamera != null) {
+      camera = widget.selectCamera!(cameras);
+    } else {
+      camera = cameras.first;
+      if (widget.typeCamera == TypeCamera.front && cameras.length > 1) {
+        camera = cameras[1];
+      }
     }
+
     controller = CameraController(
       camera,
       widget.resolutionPreset.toResolutionPreset(),
